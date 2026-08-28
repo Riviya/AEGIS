@@ -1,0 +1,38 @@
+# Build and test payment-api. Deploy to kind stays local (no public cluster required).
+name: payment-api
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "apps/payment-api/**"
+      - ".github/workflows/payment-api.yml"
+  pull_request:
+    paths:
+      - "apps/payment-api/**"
+      - ".github/workflows/payment-api.yml"
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/payment-api
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: pytest -q
+
+      - name: Build container image
+        run: docker build -t payment-api:0.1.0 .

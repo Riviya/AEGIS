@@ -1,0 +1,9 @@
+# Namespace isolates demo workloads from WSO2.
+# Why a namespace: kubectl can target demo vs wso2 without mixing objects.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+  labels:
+    aegis.phase: "1"
+    app.kubernetes.io/part-of: aegis

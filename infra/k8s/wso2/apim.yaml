@@ -1,0 +1,87 @@
+# WSO2 API Manager all-in-one (single JVM: Publisher, DevPortal, Gateway, Key Manager).
+# Image: public GA image from Docker Hub (no WSO2 subscription required).
+# RAM: requests 2Gi / limit 4Gi — sized for a 16 GB machine with Docker Desktop ~8–10 GB.
+# Startup: 3–8 minutes is normal. Do not treat CrashLoop as "failed" until probes have had time.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wso2am
+  namespace: wso2
+  labels:
+    app: wso2am
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wso2am
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wso2am
+    spec:
+      containers:
+        - name: wso2am
+          image: wso2/wso2am:4.5.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: carbon
+              containerPort: 9443
+            - name: gw-https
+              containerPort: 8243
+            - name: gw-http
+              containerPort: 8280
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms512m -Xmx2048m"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          # TCP probe: HTTP GET on 9443 often fails until Carbon finishes SSL setup.
+          startupProbe:
+            tcpSocket:
+              port: carbon
+            failureThreshold: 60
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: carbon
+            periodSeconds: 15
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: carbon
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+---
+# NodePorts match kind extraPortMappings so https://localhost:9443 works from Windows.
+apiVersion: v1
+kind: Service
+metadata:
+  name: wso2am
+  namespace: wso2
+  labels:
+    app: wso2am
+spec:
+  type: NodePort
+  selector:
+    app: wso2am
+  ports:
+    - name: carbon
+      port: 9443
+      targetPort: carbon
+      nodePort: 30443
+    - name: gw-https
+      port: 8243
+      targetPort: gw-https
+      nodePort: 30243
+    - name: gw-http
+      port: 8280
+      targetPort: gw-http
+      nodePort: 30280

@@ -1,0 +1,69 @@
+# payment-api Deployment + Service.
+# image: payment-api:0.1.0 is loaded into kind with `kind load docker-image`.
+# imagePullPolicy: Never means Kubernetes must use the local image, not Docker Hub.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-api
+  namespace: demo
+  labels:
+    app: payment-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-api
+  template:
+    metadata:
+      labels:
+        app: payment-api
+        version: v0.1.0
+    spec:
+      containers:
+        - name: payment-api
+          image: payment-api:0.1.0
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: FAIL_RATE
+              value: "0"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+---
+# ClusterIP: other pods (WSO2) reach http://payment-api.demo.svc.cluster.local:8080
+# NodePort: optional debug from your laptop via localhost:18080 (kind extraPortMapping).
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-api
+  namespace: demo
+  labels:
+    app: payment-api
+spec:
+  type: NodePort
+  selector:
+    app: payment-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      nodePort: 30080

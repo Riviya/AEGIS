@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Secrets and local env (never commit passwords)
+.env
+infra/k8s/wso2/secret.yaml
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Kubernetes local kubeconfig dumps
+kubeconfig-*
