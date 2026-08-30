@@ -36,9 +36,9 @@ param(
 [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host " Aegis Phase 2 — Live Traffic Generator" -ForegroundColor Cyan
+Write-Host " Aegis Phase 2 - Live Traffic Generator" -ForegroundColor Cyan
 Write-Host " Target URL: $Url" -ForegroundColor White
-Write-Host " Total Requests: $Requests | Delay: ${DelayMs}ms" -ForegroundColor White
+Write-Host " Total Requests: $Requests | Delay: $($DelayMs)ms" -ForegroundColor White
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 $successCount = 0
@@ -87,6 +87,7 @@ $stopwatch.Stop()
 $totalSeconds = [Math]::Round($stopwatch.Elapsed.TotalSeconds, 2)
 $actualRps = if ($totalSeconds -gt 0) { [Math]::Round($Requests / $totalSeconds, 2) } else { 0 }
 $errorRate = if ($Requests -gt 0) { [Math]::Round(($errorCount / $Requests) * 100, 2) } else { 0 }
+$errorColor = if ($errorRate -gt 0) { "Red" } else { "Green" }
 
 Write-Host ""
 Write-Host "-------------------- Traffic Summary --------------------" -ForegroundColor Cyan
@@ -94,7 +95,7 @@ Write-Host " Total Requests Sent : $Requests" -ForegroundColor White
 Write-Host " Successful (2xx)    : $successCount" -ForegroundColor Green
 Write-Host " Errors (5xx)        : $errorCount" -ForegroundColor Red
 Write-Host " Other Status Codes  : $otherCount" -ForegroundColor Yellow
-Write-Host " Error Rate (%)      : $errorRate %" -ForegroundColor $(if ($errorRate -gt 0) { "Red" } else { "Green" })
-Write-Host " Elapsed Time        : ${totalSeconds}s (${actualRps} RPS)" -ForegroundColor White
+Write-Host " Error Rate (%)      : $errorRate %" -ForegroundColor $errorColor
+Write-Host (" Elapsed Time        : {0}s ({1} RPS)" -f $totalSeconds, $actualRps) -ForegroundColor White
 Write-Host "---------------------------------------------------------" -ForegroundColor Cyan
 Write-Host "Telemetry is now recorded in Prometheus! Check your Grafana dashboard." -ForegroundColor Cyan

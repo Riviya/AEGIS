@@ -5,7 +5,7 @@
 
 .DESCRIPTION
   Prints PASS/FAIL for Docker daemon, kubectl, kind, Helm, Git.
-  Docker Desktop may be installed but not running — this script reports that clearly.
+  Docker Desktop may be installed but not running - this script reports that clearly.
 #>
 
 $ErrorActionPreference = "Continue"
