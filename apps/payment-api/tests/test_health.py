@@ -18,3 +18,11 @@ def test_list_payments_ok():
     assert response.status_code == 200
     assert "items" in response.json()
     assert len(response.json()["items"]) == 2
+
+
+def test_metrics_endpoint_ok():
+    # Make a dummy request to trigger metric creation
+    client.get("/payments")
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "http_requests" in response.text or "process_cpu" in response.text
