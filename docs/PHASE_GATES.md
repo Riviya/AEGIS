@@ -33,7 +33,7 @@ How to work on every phase:
 
 ---
 
-## Phase 2 — Observability
+## Phase 2 — Observability (current)
 
 **Prerequisite:** Phase 1 gate.
 
