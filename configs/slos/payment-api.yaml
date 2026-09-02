@@ -1,0 +1,49 @@
+# Aegis SLO Specification for payment-api
+# Phase 3 — SLI / SLO / Error Budget Engine
+
+api_name: "payment-api"
+service_label: "payment-api"
+namespace: "demo"
+evaluation_window: "5m"
+
+slos:
+  # 1. Availability SLO
+  # Percentage of total requests that returned non-5xx HTTP status codes.
+  availability:
+    enabled: true
+    target_percent: 99.0          # Target: 99.0% of requests must succeed
+    warning_threshold_percent: 99.5
+    sli_query: >-
+      (sum(rate(http_requests_total{app="payment-api", status!~"5.."}[{window}])) or vector(0))
+      /
+      (sum(rate(http_requests_total{app="payment-api"}[{window}])) > 0)
+      * 100
+
+  # 2. Latency SLO
+  # 95th percentile response time must remain below the target threshold.
+  latency:
+    enabled: true
+    p95_target_ms: 200.0          # Target: p95 latency <= 200 ms
+    p99_target_ms: 500.0          # Target: p99 latency <= 500 ms
+    p95_sli_query: >-
+      histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{app="payment-api"}[{window}])) by (le)) * 1000
+    p99_sli_query: >-
+      histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{app="payment-api"}[{window}])) by (le)) * 1000
+
+  # 3. Error Rate SLO
+  # Percentage of requests returning HTTP 5xx server errors.
+  error_rate:
+    enabled: true
+    target_percent: 1.0           # Target: Error rate <= 1.0%
+    sli_query: >-
+      (sum(rate(http_requests_total{app="payment-api", status=~"5.."}[{window}])) or vector(0))
+      /
+      (sum(rate(http_requests_total{app="payment-api"}[{window}])) > 0)
+      * 100
+
+# Error Budget Policy
+error_budget:
+  # Total error budget = (100 - availability.target_percent) = 1.0%
+  # A burn rate of 1.0 consumes 100% of the budget over the window.
+  burn_rate_warning_threshold: 2.0   # Burn rate > 2.0 triggers Warning (budget burning 2x faster than allowed)
+  burn_rate_critical_threshold: 5.0  # Burn rate > 5.0 triggers Critical / Violated

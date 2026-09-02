@@ -43,7 +43,7 @@ How to work on every phase:
 
 ---
 
-## Phase 3 — SLI / SLO / error budget
+## Phase 3 — SLI / SLO / error budget (current)
 
 **Prerequisite:** Phase 2 (Prometheus has the SLI metrics).
 
