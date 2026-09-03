@@ -18,3 +18,5 @@ Thumbs.db
 
 # Kubernetes local kubeconfig dumps
 kubeconfig-*
+
+project_description/
